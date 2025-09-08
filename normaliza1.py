@@ -400,7 +400,8 @@ normalize_zscore_with_group_boxplot(combined_fieldview, 'Yld_Mass_D', group_col=
 
 
 
-def explore(data, attribute, group_col=None, method='max', ignore_outliers=True, outlier_threshold=3,save = False):
+def explore(data, attribute, dohist = None, 
+            group_col=None, method='max', ignore_outliers=True, outlier_threshold=3,save = False):
     """
     Normalizes a numeric column by group (e.g., by 'Dataset') using percent-based scaling.
     """
@@ -419,19 +420,20 @@ def explore(data, attribute, group_col=None, method='max', ignore_outliers=True,
     data_no_outliers = original_data[~outlier_mask]
 
     # Print descriptive stats
-    print(f"\n===== {attribute} =====")
-    print("Original Data (with outliers):")
-    print(original_data.describe())
-    print("\nOriginal Data (without outliers):")
-    print(data_no_outliers.describe())
+    #print(f"\n===== {attribute} =====")
+    #print("Original Data (with outliers):")
+    #print(original_data.describe())
+    #print("\nOriginal Data (without outliers):")
+    #print(data_no_outliers.describe())
 
-    # Histogram
-    plt.figure(figsize=(12, 5))
-    sns.histplot(original_data, label='Original', color='blue', kde=True)
-    sns.histplot(data_no_outliers.dropna(), label='Original (no outiliers)', color='green', kde=True)
-    #salvar histogramas
-    if save:
-        plt.savefig(fr"C:\Users\ghirg\OneDrive\Curso Engenharia\2025S1\IC Mapas colheita\Plots histogramas\{attribute}_hist.png", dpi=300, bbox_inches="tight")
+    if dohist:
+        # Histogram
+        plt.figure(figsize=(12, 5))
+        sns.histplot(original_data, label='Original', color='blue', kde=True)
+        sns.histplot(data_no_outliers.dropna(), label='Original (no outiliers)', color='green', kde=True)
+        #salvar histogramas
+        if save:
+            plt.savefig(fr"C:\Users\ghirg\OneDrive\Curso Engenharia\2025S1\IC Mapas colheita\Plots histogramas\{attribute}_hist.png", dpi=300, bbox_inches="tight")
     
     plt.title(f'Histogram - {attribute} vs {col_norm}')
     plt.legend()
@@ -445,7 +447,9 @@ def explore(data, attribute, group_col=None, method='max', ignore_outliers=True,
     plt.boxplot([original_data.dropna()],
                 labels=['Original (All)'])
     
-    
+    plt.show()
+    plt.title(f'Boxplot - {attribute} Variants')
+
     plt.boxplot([data_no_outliers.dropna()],
                 labels=['Original (No Outliers)'])
 
@@ -519,18 +523,22 @@ def normalize_percent_by_group(data, attribute, group_col=None, method='max', ig
         data[col_norm] = normalize_group(data[attribute].dropna())
 
     # Print descriptive stats
-    print("Original Data (with outliers):")
-    print(original_data.describe())
-    print("\nOriginal Data (without outliers):")
-    print(data_no_outliers.describe())
-    print("\nNormalized Data:")
-    print(data[col_norm].dropna().describe())
+    #print("Original Data (with outliers):")
+    #print(original_data.describe())
+    #print("\nOriginal Data (without outliers):")
+    #print(data_no_outliers.describe())
+    #print("\nNormalized Data:")
+    #print(data[col_norm].dropna().describe())
 
     # Histogram
     plt.figure(figsize=(12, 5))
     sns.histplot(original_data, label='Original', color='blue', kde=True)
+    plt.title(f'Histogram - {attribute} original')
+    plt.legend()
+    plt.show()
+
     sns.histplot(data[col_norm].dropna(), label='Normalized', color='green', kde=True)
-    plt.title(f'Histogram - {attribute} vs {col_norm}')
+    plt.title(f'Histogram - {attribute} {col_norm}')
     plt.legend()
     plt.show()
 
@@ -566,7 +574,7 @@ def normalize_percent_by_group(data, attribute, group_col=None, method='max', ig
 
 
 #chamadas para rodar o normalizar por linear
-
+#%%
 norm_prct_fieldview = normalize_percent_by_group(
     data=combined_fieldview,
     attribute='Yld_Mass_D',
@@ -654,25 +662,43 @@ explore(
     attribute='Yld_Mass_D',
     group_col='Dataset'
 )
-
+#%%
 
 explore(
     data=gdf72,
-    attribute='Yld_Mass_D',
-    group_col='Dataset'
+    attribute='Yld_Mass_D'
+    
 )
 
 
 #%%
+#gdf723 = gdf72.drop(columns = ["Yld_Mass_D_percent_normalized", "Distance_m" >= 5, "Distance_m" <= 0.3, "Speed_km_h" >= 15])
+gdf723 = gdf72[(gdf72['Distance_m']<=5) & (gdf72['Distance_m'] >=3) & (gdf72['Speed_km_h'] <=15)].drop(columns=['Yld_Mass_D_percent_normalized', 'Obj__Id'])
+print(gdf723.describe())
 
+#gdf72.columns
+#%%
 
-for i in gdf72.columns:
+for i in gdf723.columns:
     explore(
-    data=gdf72,
+    data=gdf723,
     attribute=i
     
 )
+#%%
+def boxplots2(data, attribute, outlier_threshold = 3):
 
+    if not np.issubdtype(data[attribute].dtype, np.number):
+            print(f"Skipping non-numeric column: {attribute}")
+            return data
+
+    col_norm = f'{attribute} no outliers'
+    original_data = data[attribute].dropna()
+
+        # Compute z-scores and identify outliers
+    z_scores = (original_data - original_data.mean()) / original_data.std()
+    outlier_mask = np.abs(z_scores) > outlier_threshold
+    data_no_outliers = original_data[~outlier_mask]
 
  
 
