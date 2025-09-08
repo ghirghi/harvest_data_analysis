@@ -410,7 +410,7 @@ def explore(data, attribute, group_col=None, method='max', ignore_outliers=True,
         print(f"Skipping non-numeric column: {attribute}")
         return data
 
-    col_norm = f'{attribute}_percent_normalized'
+    col_norm = f'{attribute} no outliers'
     original_data = data[attribute].dropna()
 
     # Compute z-scores and identify outliers
@@ -439,8 +439,16 @@ def explore(data, attribute, group_col=None, method='max', ignore_outliers=True,
 
     # Boxplot comparison
     plt.figure(figsize=(8, 5))
-    plt.boxplot([original_data, data_no_outliers.dropna()],
-                labels=['Original (All)', 'Original (No Outliers)'])
+    #plt.boxplot([original_data, data_no_outliers.dropna()],
+     #           labels=['Original (All)', 'Original (No Outliers)'])
+    
+    plt.boxplot([original_data.dropna()],
+                labels=['Original (All)'])
+    
+    
+    plt.boxplot([data_no_outliers.dropna()],
+                labels=['Original (No Outliers)'])
+
     plt.title(f'Boxplot - {attribute} Variants')
     plt.show()
 
@@ -653,6 +661,20 @@ explore(
     attribute='Yld_Mass_D',
     group_col='Dataset'
 )
+
+
+#%%
+
+
+for i in gdf72.columns:
+    explore(
+    data=gdf72,
+    attribute=i
+    
+)
+
+
+ 
 
 #%%
 
