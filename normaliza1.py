@@ -432,13 +432,14 @@ def explore(data, attribute, dohist = None,
         sns.histplot(original_data, label='Original', color='blue', kde=True)
         sns.histplot(data_no_outliers.dropna(), label='Original (no outiliers)', color='green', kde=True)
         #salvar histogramas
+    
+        plt.title(f'Histogram - {attribute} vs {col_norm}')
+        plt.legend()
+        plt.show()
+
         if save:
             plt.savefig(fr"C:\Users\ghirg\OneDrive\Curso Engenharia\2025S1\IC Mapas colheita\Plots histogramas\{attribute}_hist.png", dpi=300, bbox_inches="tight")
-    
-    plt.title(f'Histogram - {attribute} vs {col_norm}')
-    plt.legend()
-    plt.show()
-
+            
     # Boxplot comparison
     plt.figure(figsize=(8, 5))
     #plt.boxplot([original_data, data_no_outliers.dropna()],
@@ -669,22 +670,35 @@ explore(
     attribute='Yld_Mass_D'
     
 )
-
-
-#%%
+ 
+ #%%
 #gdf723 = gdf72.drop(columns = ["Yld_Mass_D_percent_normalized", "Distance_m" >= 5, "Distance_m" <= 0.3, "Speed_km_h" >= 15])
-gdf723 = gdf72[(gdf72['Distance_m']<=5) & (gdf72['Distance_m'] >=3) & (gdf72['Speed_km_h'] <=15)].drop(columns=['Yld_Mass_D_percent_normalized', 'Obj__Id'])
-print(gdf723.describe())
+gdf723 = gdf72[(gdf72['Distance_m']<=5) & (gdf72['Distance_m'] >=0.3) & (gdf72['Speed_km_h'] <=15)].drop(columns=['Yld_Mass_D_percent_normalized', 'Obj__Id'])
 
-#gdf72.columns
+
+
+
+gdf723.describe()
 #%%
 
+print(gdf723.columns[:3])
+
+explore(
+    data=gdf723,
+    attribute=['DataHora'])
+
+
+#%%
+
+#%%
 for i in gdf723.columns:
+    print(f'Atributo: {i}\n')
     explore(
     data=gdf723,
     attribute=i
     
 )
+    
 #%%
 def boxplots2(data, attribute, outlier_threshold = 3):
 
